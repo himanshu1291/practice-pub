@@ -1,0 +1,13 @@
+workgroup = TEST
+security= user
+
+passdb backend= tdbsam
+
+smb encrypt= required 
+server min protocol= SMB3 
+
+[{{ share_name }}]
+	path= {{ shared_dir }}
+	writeable= Yes
+	valid users= @{{ smb_grp }}
+	read only= No

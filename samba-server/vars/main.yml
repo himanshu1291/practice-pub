@@ -1,0 +1,21 @@
+---
+# Defining the list of users that will be used to authenticate shared directory !
+#
+smb_users:
+       - smbuser1 
+       - smbuser2
+
+# Define smb_group in which above users will be added !
+smb_grp: smbgrp 
+
+# Mention the directory name that would be shared to samba-clients !
+shared_dir: /share 
+
+# Password through which SMB-user will authenticate shared directory !
+# NOTE: you can mention the value of below variable in vault-file more security !
+smb_passwd: redhat 
+  
+  # Name that have to mention in samba-server configuration !
+  #
+share_name: share 
+

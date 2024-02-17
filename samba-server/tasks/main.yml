@@ -1,0 +1,82 @@
+---
+- name: Installing samba and samba-common package 
+  yum:
+      name: 
+             - samba 
+             - samba-common
+      state: latest 
+
+- name: Enable smb.service 
+  service:
+      name: smb
+      state: started
+      enabled: true 
+
+- name: Ensuring Firewall is in running state
+  service: 
+      name: firewalld
+      state: started
+      enabled: true 
+
+- name: Adding smb.service to firewall
+  firewalld:
+      service: samba
+      state: enabled
+      permanent: true
+      immediate: true
+
+- name: creating group for users used for authentication of shared directory
+  group:
+      name: "{{ smb_grp }}"
+      state: present 
+
+- name: Adding user that would be a part of smbgrp 
+  user:
+      name: "{{ item }}"
+      state: present 
+      group: smbgrp
+      shell: /sbin/nologin  
+  loop: "{{ smb_users }}"      
+
+- name: Adding above users to smb database 
+  command: 'smbpasswd -s -a "{{ item }}"'
+  args:
+       stdin: "{{ smb_passwd }}\n{{ smb_passwd }}"
+  loop: "{{ smb_users }}"
+       
+
+
+- name: Creating directory that would be shared among samba-clients
+  file: 
+      name: "{{ shared_dir }}"
+      state: directory
+      owner: root
+      group: "{{ smb_grp }}"
+      mode: "2770"
+  
+- name: set selinux fcontext on shared directory
+  sefcontext:
+      target: "'{{ shared_dir }}(/.*)?'"
+      setype: samba_share_t 
+      state: present 
+
+- name: relabeled fcontext in selinux 
+  command: 'restorecon -RvF /share'
+
+- name: creating testing file 
+  file:
+      path: "{{ shared_dir }}/testing.txt"
+      state: touch
+
+- name: creating conf file for samba under /etc/samba 
+  template:
+      src: smb.conf.j2
+      dest: /etc/samba/smb.conf 
+
+- name: restarting smb.service
+  service: 
+      name: smb
+      state: restarted 
+      enabled: true 
+
+

@@ -1,0 +1,38 @@
+---
+- name: installing required packages to configure samba-client
+  yum:
+      name: 
+           - samba-client
+           - cifs-utils
+      state: present 
+
+- name: creating "{{ access_dir }}" which will be working as access point to shared directory       
+  file:
+       path: "{{ access_dir }}"
+       state: directory
+       owner: root
+       group: root
+       mode: "0755"
+
+- name: creating credential file to access "{{ shared_dir }}" under /etc/samba
+  template:
+       src: creds.j2
+       dest: /etc/samba/credentails 
+
+- name: mapping IP address of samba server to hostname locally
+  blockinfile:
+       block: |
+          ' "{{ ipaddress_samba_server }}" samba-server.server.com '
+       path: /etc/hosts
+       marker: " # {mark} Mapping IP address of SAMBA_SERVER to hostname Locally !"   
+
+- name: mount "{{ shared_dir }}" shared hosted by "{{ samba_server_fqdn }}" to samba-client at "{{ access_dir }}"
+  mount:
+       src: "//{{ samba_server_fqdn }}/{{ shared_dir }}" 
+       path: "{{ access_dir }}"
+       fstype: cifs 
+       opts: 'credentails=/etc/samba/credentials,seal' 
+       state: mounted 
+  notify: remount
+
+         

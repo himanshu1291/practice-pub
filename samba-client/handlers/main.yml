@@ -1,0 +1,11 @@
+---
+# Mounting Samba-server shared directory persistently ! 
+#
+
+- name: remount 
+  mount:
+       src: "//{{ ipaddress_samba_server }}{{ shared_dir }}"
+       path: "{{ access_dir }}"
+       fstype: cifs 
+       opts: 'credentials=/etc/samba/credentials,seal'
+       state: mounted 

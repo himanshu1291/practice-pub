@@ -1,0 +1,10 @@
+---
+access_dir: /access
+shared_dir: /share
+ipaddress_samba_server: 192.168.33.167
+samba_server_fqdn: samba-server.server.com 
+
+smb_users: smbuser1
+
+smb_password: redhat
+
